@@ -1,34 +1,68 @@
 import java.util.ArrayList
 import java.util.List
 
-class BowlingBall {
-    public int id;
 
-    BowlingBall(int id) {
-        this.id = id;
-    }
+interface IBowlingBall {
+    void setId(int id);
+    int getId();
 }
 
+interface IProShopBowlingBall extends IBowlingBall {};   // marker interface
+interface IBowlerBowlingBall extends IBowlingBall {};    // ditto
+
+class BowlingBallFactory {
+
+    private class BowlingBall implements IBowlingBall{
+        private int id;
+
+        BowlingBall() {
+            this.id = 0;
+        }
+
+        void setId(int newId) {
+            this.id = newId;
+        }
+
+        int getId() {return this.id}
+    }
+
+    class BowlerBowlingBall extends BowlingBall implements IBowlerBowlingBall {
+    }
+
+    class ProShopBowlingBall extends BowlingBall implements IProShopBowlingBall {
+    }
+
+    IBowlerBowlingBall createBowlingBall(Bowler b) {
+        return new BowlerBowlingBall();
+    }
+
+    IProShopBowlingBall createBowlingBall(ProShop p) {
+        return new ProShopBowlingBall();
+    }
+
+}
+
+
 class Bowler {
-    private BowlingBall bowlingBall;
+    private IBowlerBowlingBall bowlingBall;
 
     void setBowlingBall(b) {
         bowlingBall = b;
     }
 
-    BowlingBall getBowlingBall() {
+    IBowlerBowlingBall getBowlingBall() {
         return bowlingBall;
     }
 }
 
 class ProShop {
-    private List<BowlingBall> bowlingBalls = new ArrayList<BowlingBall>();
+    private List<IProShopBowlingBall> bowlingBalls = new ArrayList<>();
 
-    boolean addBowlingBall(BowlingBall b) {
+    boolean addBowlingBall(IProShopBowlingBall b) {
         return this.bowlingBalls.add(b);
     }
 
-    BowlingBall getAtBowlingBall(index) {
+    IProShopBowlingBall getAtBowlingBall(index) {
         try {
             return this.bowlingBalls[index];
         } catch (ArrayIndexOutOfBoundsException e) {
@@ -38,15 +72,15 @@ class ProShop {
 }
 
 // test
-BowlingBall bowlingBall = new BowlingBall(1);
-
 ProShop proShop = new ProShop();
 Bowler bowler = new Bowler();
+BowlingBallFactory bbf = new BowlingBallFactory();
 
-proShop.addBowlingBall(bowlingBall);
-bowler.setBowlingBall(bowlingBall);
+proShop.addBowlingBall(bbf.createBowlingBall(proShop));
+bowler.setBowlingBall(bbf.createBowlingBall(bowler));
 
-bowler.getBowlingBall().id = 2;
+proShop.getAtBowlingBall(0).setId(1);
+bowler.getBowlingBall().setId(2);
 
-assert bowler.getBowlingBall().id == 2;
-assert proShop.getAtBowlingBall(0).id == 1; //fail!
+assert bowler.getBowlingBall().getId() == 2;
+assert proShop.getAtBowlingBall(0).getId() == 1;
