@@ -42,11 +42,10 @@ class BowlingBallFactory {
 
 }
 
-
 class Bowler {
     private IBowlerBowlingBall bowlingBall;
 
-    void setBowlingBall(b) {
+    void setBowlingBall(IBowlerBowlingBall b) {
         bowlingBall = b;
     }
 
@@ -76,7 +75,8 @@ ProShop proShop = new ProShop();
 Bowler bowler = new Bowler();
 BowlingBallFactory bbf = new BowlingBallFactory();
 
-proShop.addBowlingBall(bbf.createBowlingBall(proShop));
+IProShopBowlingBall proShopBall = bbf.createBowlingBall(proShop);
+proShop.addBowlingBall(proShopBall);
 bowler.setBowlingBall(bbf.createBowlingBall(bowler));
 
 proShop.getAtBowlingBall(0).setId(1);
@@ -84,3 +84,9 @@ bowler.getBowlingBall().setId(2);
 
 assert bowler.getBowlingBall().getId() == 2;
 assert proShop.getAtBowlingBall(0).getId() == 1;
+
+try {
+    bowler.setBowlingBall(proShopBall);             //fails
+} catch (groovy.lang.MissingMethodException e) {
+    System.err << "Can't assign proShopBowlingBall to Bowler"
+}
