@@ -47,8 +47,8 @@ class BowlingBallFactory {
         }
     }
 
-    void visitBowler(IBowlerBowlingBall bowlingBall) {
-        bowlingBall = new BowlerBowlingBall('Acme Whizbang', '#3000-13333');
+    void visitBowler(List<IBowlerBowlingBall> bowlingBalls) {
+        bowlingBalls.set(0, new BowlerBowlingBall('Acme Whizbang', '#3000-13333'));
     }
 
     void visitProShop(List<IProShopBowlingBall> bowlingBalls) {
@@ -67,7 +67,7 @@ class BowlingBallFactory {
 
 class Bowler {
     private List<IBowlerBowlingBall> bowlingBalls= Arrays.asList(new IBowlerBowlingBall[1]);
-    private IBowlingBall bowlingBall = bowlingBalls.get(0);
+    private IBowlingBall bowlingBall;
 
     Bowler() {}
 
@@ -84,7 +84,8 @@ class Bowler {
     }
 
     void accept(BowlingBallFactory bbf) {
-        bbf.visitBowler(bowlingBall);
+        bbf.visitBowler(bowlingBalls);
+        bowlingBall = bowlingBalls.get(0);
     }
 }
 
