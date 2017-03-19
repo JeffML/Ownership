@@ -24,6 +24,14 @@ interface IBowlerBowlingBall extends IBowlingBall {
 
 interface IProShopBowlingBall extends IBowlingBall {}
 
+class BowlerBowlingBallList implements List<IBowlerBowlingBall> {
+    @Delegate List<IBowlerBowlingBall> bowlingBalls = Arrays.asList(new IBowlerBowlingBall[1]);
+};
+
+class ProShopBowlingBallList implements List<IProShopBowlingBall> {
+    @Delegate List<IProShopBowlingBall> bowlingBalls = new ArrayList<>();
+};
+
 class BowlingBallFactory {
     static private class BowlerBowlingBall extends BowlingBall implements IBowlerBowlingBall {
         private String petName;
@@ -47,11 +55,11 @@ class BowlingBallFactory {
         }
     }
 
-    void visitBowler(List<IBowlerBowlingBall> bowlingBalls) {
+    void visit(BowlerBowlingBallList bowlingBalls) {
         bowlingBalls.set(0, new BowlerBowlingBall('Acme Whizbang', '#3000-13333'));
     }
 
-    void visitProShop(List<IProShopBowlingBall> bowlingBalls) {
+    void visit(ProShopBowlingBallList bowlingBalls) {
         bowlingBalls.add(new ProShopBowlingBall('Dynamo Destructor', '#22-233-XY'));
     }
 
@@ -66,12 +74,16 @@ class BowlingBallFactory {
 }
 
 class Bowler {
-    private List<IBowlerBowlingBall> bowlingBalls= Arrays.asList(new IBowlerBowlingBall[1]);
+    private BowlerBowlingBallList bowlingBalls = new BowlerBowlingBallList();
     private IBowlingBall bowlingBall;
 
     Bowler() {}
 
     void setPetName(String petName) {
+        if (bowlingBall == null) {
+            throw Exception("Bowler lacks bowling ball")
+        }
+
         if (petName ==~ /[A-Z][a-z\s]*/) {
             bowlingBall.setPetName(petName);
         } else {
@@ -80,17 +92,20 @@ class Bowler {
     }
 
     String getPetName() {
+        if (bowlingBall == null) {
+            throw Exception("Bowler lacks bowling ball")
+        }
         return bowlingBall.getPetName();
     }
 
     void accept(BowlingBallFactory bbf) {
-        bbf.visitBowler(bowlingBalls);
+        bbf.visit(bowlingBalls);
         bowlingBall = bowlingBalls.get(0);
     }
 }
 
 class ProShop {
-    private List<IProShopBowlingBall> bowlingBalls = new ArrayList<IProShopBowlingBall>();
+    private ProShopBowlingBallList bowlingBalls = new ProShopBowlingBallList();
 
     ProShop() { }
 
@@ -103,7 +118,7 @@ class ProShop {
     }
 
     void accept(BowlingBallFactory bbf) {
-        bbf.visitProShop(bowlingBalls);
+        bbf.visit(bowlingBalls);
     }
 }
 
