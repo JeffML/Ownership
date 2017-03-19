@@ -1,72 +1,108 @@
 import java.util.ArrayList
 import java.util.List
 
-
 interface IBowlingBall {
-    void setId(int id);
-    int getId();
+    String getBrand();
+    String getSerialNumber();
 }
 
-interface IProShopBowlingBall extends IBowlingBall {};   // marker interface
-interface IBowlerBowlingBall extends IBowlingBall {};    // ditto
+abstract class BowlingBall implements IBowlingBall {
+    private String brand, serialNumber;
+
+    BowlingBall(String brand, String serialNumber) {
+        this.brand = brand;
+        this.serialNumber = serialNumber;
+    }
+
+    String getBrand() { return this.brand };
+    String getSerialNumber() {return this.serialNumber};
+}
+
+interface IBowlerBowlingBall extends IBowlingBall {
+    String getPetName();
+}
+
+interface IProShopBowlingBall extends IBowlingBall {}
 
 class BowlingBallFactory {
+    static private class BowlerBowlingBall extends BowlingBall implements IBowlerBowlingBall {
+        private String petName;
 
-    private class BowlingBall implements IBowlingBall{
-        private int id;
-
-        BowlingBall() {
-            this.id = 0;
+        BowlerBowlingBall(String brand, String serialNumber) {
+            super(brand, serialNumber);
         }
 
-        void setId(int newId) {
-            this.id = newId;
+        private void setPetName(String petName) {
+            this.petName = petName;
         }
 
-        int getId() {return this.id}
+        String getPetName() {
+            return this.petName;
+        }
     }
 
-    class BowlerBowlingBall extends BowlingBall implements IBowlerBowlingBall {
+    static private class ProShopBowlingBall extends BowlingBall implements IProShopBowlingBall {
+        ProShopBowlingBall(String brand, String serialNumber) {
+            super(brand, serialNumber);
+        }
     }
 
-    class ProShopBowlingBall extends BowlingBall implements IProShopBowlingBall {
+    void visitBowler(IBowlerBowlingBall bowlingBall) {
+        bowlingBall = new BowlerBowlingBall('Acme Whizbang', '#3000-13333');
     }
 
-    IBowlerBowlingBall createBowlingBall(Bowler b) {
-        return new BowlerBowlingBall();
+    void visitProShop(List<IProShopBowlingBall> bowlingBalls) {
+        bowlingBalls.add(new ProShopBowlingBall('Dynamo Destructor', '#22-233-XY'));
     }
 
-    IProShopBowlingBall createBowlingBall(ProShop p) {
-        return new ProShopBowlingBall();
+    IBowlingBall createBowlingBallFor(Bowler b) {
+        b.accept(this);
+    }
+
+    IBowlingBall createBowlingBallFor(ProShop p) {
+        p.accept(this);
     }
 
 }
 
 class Bowler {
-    private IBowlerBowlingBall bowlingBall;
+    private List<IBowlerBowlingBall> bowlingBalls= Arrays.asList(new IBowlerBowlingBall[1]);
+    private IBowlingBall bowlingBall = bowlingBalls.get(0);
 
-    void setBowlingBall(IBowlerBowlingBall b) {
-        bowlingBall = b;
+    Bowler() {}
+
+    void setPetName(String petName) {
+        if (petName ==~ /[A-Z][a-z\s]*/) {
+            bowlingBall.setPetName(petName);
+        } else {
+            throw Exception("only letters, please")
+        }
     }
 
-    IBowlerBowlingBall getBowlingBall() {
-        return bowlingBall;
+    String getPetName() {
+        return bowlingBall.getPetName();
+    }
+
+    void accept(BowlingBallFactory bbf) {
+        bbf.visitBowler(bowlingBall);
     }
 }
 
 class ProShop {
-    private List<IProShopBowlingBall> bowlingBalls = new ArrayList<>();
+    private List<IProShopBowlingBall> bowlingBalls = new ArrayList<IProShopBowlingBall>();
 
-    boolean addBowlingBall(IProShopBowlingBall b) {
-        return this.bowlingBalls.add(b);
+    ProShop() { }
+
+    void addBowlingBall(IProShopBowlingBall b) {
+        bowlingBalls.add(b);
     }
 
-    IProShopBowlingBall getAtBowlingBall(index) {
-        try {
-            return this.bowlingBalls[index];
-        } catch (ArrayIndexOutOfBoundsException e) {
-            return null;
-        }
+    IProShopBowlingBall getBowlingBallAt(index) {
+        return bowlingBalls.getAt(index);
+    }
+
+    void accept(BowlingBallFactory bbf) {
+        bbf.visitProShop(bowlingBalls);
     }
 }
 
@@ -75,18 +111,10 @@ ProShop proShop = new ProShop();
 Bowler bowler = new Bowler();
 BowlingBallFactory bbf = new BowlingBallFactory();
 
-IProShopBowlingBall proShopBall = bbf.createBowlingBall(proShop);
-proShop.addBowlingBall(proShopBall);
-bowler.setBowlingBall(bbf.createBowlingBall(bowler));
+bbf.createBowlingBallFor(proShop);
+bbf.createBowlingBallFor(bowler);
 
-proShop.getAtBowlingBall(0).setId(1);
-bowler.getBowlingBall().setId(2);
+bowler.setPetName("Bunky");
 
-assert bowler.getBowlingBall().getId() == 2;
-assert proShop.getAtBowlingBall(0).getId() == 1;
-
-try {
-    bowler.setBowlingBall(proShopBall);             //fails
-} catch (groovy.lang.MissingMethodException e) {
-    System.err << "Can't assign proShopBowlingBall to Bowler"
-}
+print bowler.getPetName();
+print proShop.getBowlingBallAt(0).getBrand();
