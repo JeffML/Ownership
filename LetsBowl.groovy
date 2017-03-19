@@ -117,5 +117,5 @@ bbf.createBowlingBallFor(bowler);
 
 bowler.setPetName("Bunky");
 
-print bowler.getPetName();
-print proShop.getBowlingBallAt(0).getBrand();
+System.out << bowler.getPetName() << "\n";
+System.out << proShop.getBowlingBallAt(0).getBrand();
